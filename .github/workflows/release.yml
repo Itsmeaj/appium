@@ -1,0 +1,55 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20.19.0'
+
+      - name: Install build tools
+        run: sudo apt-get install -y dpkg-dev fakeroot rpm
+
+      - name: Install npm dependencies
+        run: npm install --ignore-scripts
+
+      - name: Build .deb (Ubuntu)
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ./packaging/deb/build-unified-installer.sh \
+            --runtime-deb installers/stdspalinux-ubuntu_20_04.deb \
+            --appium-spec appium@2.19.0 \
+            --version "$VERSION"
+
+      - name: Build .rpm (RHEL 10)
+        env:
+          UIMATE_ALLOW_CROSS_BUILD: "1"
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ./packaging/rpm/build-unified-installer.sh \
+            --el-major 10 \
+            --runtime-lib native/dist/el10/libstdspalinux.so \
+            --appium-spec appium@2.19.0 \
+            --version "$VERSION"
+
+      - name: Create GitHub Release and upload packages
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes \
+            "dist/installers/uimate-appium-linux_${VERSION}_all.deb" \
+            "dist/installers/uimate-appium-linux-${VERSION}-1.el10.x86_64.rpm"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

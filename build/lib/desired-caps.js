@@ -1,0 +1,28 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.desiredCapConstraints = void 0;
+require("source-map-support/register");
+const desiredCapConstraints = exports.desiredCapConstraints = {
+  appName: {
+    isString: true
+  },
+  linuxBackend: {
+    isString: true,
+    inclusionCaseInsensitive: ['auto', 'x11', 'wayland']
+  },
+  waylandRestoreToken: {
+    isString: true
+  },
+  waylandTokenStorePath: {
+    isString: true
+  },
+  waylandAutoShare: {
+    isBoolean: true
+  }
+};require('source-map-support').install();
+
+
+//# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibGliL2Rlc2lyZWQtY2Fwcy5qcyIsIm5hbWVzIjpbImRlc2lyZWRDYXBDb25zdHJhaW50cyIsImV4cG9ydHMiLCJhcHBOYW1lIiwiaXNTdHJpbmciLCJsaW51eEJhY2tlbmQiLCJpbmNsdXNpb25DYXNlSW5zZW5zaXRpdmUiLCJ3YXlsYW5kUmVzdG9yZVRva2VuIiwid2F5bGFuZFRva2VuU3RvcmVQYXRoIiwid2F5bGFuZEF1dG9TaGFyZSIsImlzQm9vbGVhbiJdLCJzb3VyY2VSb290IjoiLi4vLi4iLCJzb3VyY2VzIjpbImxpYi9kZXNpcmVkLWNhcHMuanMiXSwic291cmNlc0NvbnRlbnQiOlsiY29uc3QgZGVzaXJlZENhcENvbnN0cmFpbnRzID0ge1xuICBhcHBOYW1lOiB7XG4gICAgaXNTdHJpbmc6IHRydWVcbiAgfSxcbiAgbGludXhCYWNrZW5kOiB7XG4gICAgaXNTdHJpbmc6IHRydWUsXG4gICAgaW5jbHVzaW9uQ2FzZUluc2Vuc2l0aXZlOiBbJ2F1dG8nLCAneDExJywgJ3dheWxhbmQnXVxuICB9LFxuICB3YXlsYW5kUmVzdG9yZVRva2VuOiB7XG4gICAgaXNTdHJpbmc6IHRydWVcbiAgfSxcbiAgd2F5bGFuZFRva2VuU3RvcmVQYXRoOiB7XG4gICAgaXNTdHJpbmc6IHRydWVcbiAgfSxcbiAgd2F5bGFuZEF1dG9TaGFyZToge1xuICAgIGlzQm9vbGVhbjogdHJ1ZVxuICB9XG59O1xuXG5leHBvcnQgeyBkZXNpcmVkQ2FwQ29uc3RyYWludHMgfTtcbiJdLCJtYXBwaW5ncyI6Ijs7Ozs7OztBQUFBLE1BQU1BLHFCQUFxQixHQUFBQyxPQUFBLENBQUFELHFCQUFBLEdBQUc7RUFDNUJFLE9BQU8sRUFBRTtJQUNQQyxRQUFRLEVBQUU7RUFDWixDQUFDO0VBQ0RDLFlBQVksRUFBRTtJQUNaRCxRQUFRLEVBQUUsSUFBSTtJQUNkRSx3QkFBd0IsRUFBRSxDQUFDLE1BQU0sRUFBRSxLQUFLLEVBQUUsU0FBUztFQUNyRCxDQUFDO0VBQ0RDLG1CQUFtQixFQUFFO0lBQ25CSCxRQUFRLEVBQUU7RUFDWixDQUFDO0VBQ0RJLHFCQUFxQixFQUFFO0lBQ3JCSixRQUFRLEVBQUU7RUFDWixDQUFDO0VBQ0RLLGdCQUFnQixFQUFFO0lBQ2hCQyxTQUFTLEVBQUU7RUFDYjtBQUNGLENBQUMiLCJpZ25vcmVMaXN0IjpbXX0=

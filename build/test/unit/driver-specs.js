@@ -1,0 +1,15 @@
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+require("source-map-support/register");
+var _driver = _interopRequireDefault(require("../../lib/driver.js"));
+var _chai = _interopRequireDefault(require("chai"));
+const should = _chai.default.should();
+describe('AtSpi2Driver', function () {
+  it('should exist', function () {
+    should.exist(_driver.default);
+  });
+});require('source-map-support').install();
+
+
+//# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoidGVzdC91bml0L2RyaXZlci1zcGVjcy5qcyIsIm5hbWVzIjpbIl9kcml2ZXIiLCJfaW50ZXJvcFJlcXVpcmVEZWZhdWx0IiwicmVxdWlyZSIsIl9jaGFpIiwic2hvdWxkIiwiY2hhaSIsImRlc2NyaWJlIiwiaXQiLCJleGlzdCIsIkF0U3BpMkRyaXZlciJdLCJzb3VyY2VSb290IjoiLi4vLi4vLi4iLCJzb3VyY2VzIjpbInRlc3QvdW5pdC9kcml2ZXItc3BlY3MuanMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IEF0U3BpMkRyaXZlciBmcm9tICcuLi8uLi9saWIvZHJpdmVyLmpzJztcbmltcG9ydCBjaGFpIGZyb20gJ2NoYWknO1xuY29uc3Qgc2hvdWxkID0gY2hhaS5zaG91bGQoKTtcblxuZGVzY3JpYmUoJ0F0U3BpMkRyaXZlcicsIGZ1bmN0aW9uICgpIHtcbiAgaXQoJ3Nob3VsZCBleGlzdCcsIGZ1bmN0aW9uICgpIHtcbiAgICBzaG91bGQuZXhpc3QoQXRTcGkyRHJpdmVyKTtcbiAgfSk7XG59KTtcbiJdLCJtYXBwaW5ncyI6Ijs7OztBQUFBLElBQUFBLE9BQUEsR0FBQUMsc0JBQUEsQ0FBQUMsT0FBQTtBQUNBLElBQUFDLEtBQUEsR0FBQUYsc0JBQUEsQ0FBQUMsT0FBQTtBQUNBLE1BQU1FLE1BQU0sR0FBR0MsYUFBSSxDQUFDRCxNQUFNLENBQUMsQ0FBQztBQUU1QkUsUUFBUSxDQUFDLGNBQWMsRUFBRSxZQUFZO0VBQ25DQyxFQUFFLENBQUMsY0FBYyxFQUFFLFlBQVk7SUFDN0JILE1BQU0sQ0FBQ0ksS0FBSyxDQUFDQyxlQUFZLENBQUM7RUFDNUIsQ0FBQyxDQUFDO0FBQ0osQ0FBQyxDQUFDIiwiaWdub3JlTGlzdCI6W119

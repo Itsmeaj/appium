@@ -1,0 +1,13 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+require("source-map-support/register");
+var _support = require("@appium/support");
+const log = _support.logger.getLogger('AtSpi2Driver');
+var _default = exports.default = log;require('source-map-support').install();
+
+
+//# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibGliL2xvZ2dlci5qcyIsIm5hbWVzIjpbIl9zdXBwb3J0IiwicmVxdWlyZSIsImxvZyIsImxvZ2dlciIsImdldExvZ2dlciIsIl9kZWZhdWx0IiwiZXhwb3J0cyIsImRlZmF1bHQiXSwic291cmNlUm9vdCI6Ii4uLy4uIiwic291cmNlcyI6WyJsaWIvbG9nZ2VyLmpzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IGxvZ2dlciB9IGZyb20gJ0BhcHBpdW0vc3VwcG9ydCc7XG5cbmNvbnN0IGxvZyA9IGxvZ2dlci5nZXRMb2dnZXIoJ0F0U3BpMkRyaXZlcicpO1xuXG5leHBvcnQgZGVmYXVsdCBsb2c7XG4iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7QUFBQSxJQUFBQSxRQUFBLEdBQUFDLE9BQUE7QUFFQSxNQUFNQyxHQUFHLEdBQUdDLGVBQU0sQ0FBQ0MsU0FBUyxDQUFDLGNBQWMsQ0FBQztBQUFDLElBQUFDLFFBQUEsR0FBQUMsT0FBQSxDQUFBQyxPQUFBLEdBRTlCTCxHQUFHIiwiaWdub3JlTGlzdCI6W119
