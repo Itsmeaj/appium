@@ -19,10 +19,10 @@ jobs:
           node-version: '20.19.0'
 
       - name: Install build tools
-        run: sudo apt-get install -y dpkg-dev fakeroot rpm
+        run: sudo apt-get install -y binutils dpkg-dev fakeroot rpm
 
-      - name: Install npm dependencies
-        run: npm install --ignore-scripts
+      - name: Install locked dependencies
+        run: corepack yarn@1.22.22 install --frozen-lockfile --ignore-scripts --non-interactive
 
       - name: Build .deb (Ubuntu)
         run: |
@@ -49,7 +49,7 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
             --generate-notes \
-            "dist/installers/uimate-appium-linux_${VERSION}_all.deb" \
+            "dist/installers/uimate-appium-linux_${VERSION}_amd64.deb" \
             "dist/installers/uimate-appium-linux-${VERSION}-1.el10.x86_64.rpm"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

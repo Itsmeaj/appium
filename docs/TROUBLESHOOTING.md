@@ -36,7 +36,7 @@ ls -l /usr/local/lib/libstdspalinux.so
 ```
 
 - Install UImate/stdspalinux runtime package if missing.
-- On RHEL, install the matching unified RPM (`el8`, `el9`, or `el10`) to provision this file.
+- On RHEL 10 x86-64, install the EL10 unified RPM to provision this file.
 
 ## Installer `.deb` Is Tiny Text File
 

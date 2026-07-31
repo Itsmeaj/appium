@@ -13,7 +13,7 @@ Appium Linux Driver enables desktop app automation on Linux using AT-SPI, with d
 curl -fsSL https://raw.githubusercontent.com/Itsmeaj/appium/main/install.sh | sudo bash
 ```
 
-Works on **Ubuntu 20.04+**, **RHEL 8/9/10**, Rocky Linux, and AlmaLinux.  
+Release packages target **Ubuntu 20.04+ amd64** and **RHEL 10 x86_64**.
 Installs Node.js 20.19.0, Appium 2.19.0, and the Linux driver — no manual setup required.
 
 After install, verify: `uimate-appium-doctor`  
@@ -27,10 +27,13 @@ Each release contains two packages:
 
 | Package | Target |
 |---------|--------|
-| `uimate-appium-linux_<version>_all.deb` | Ubuntu 20.04+ / Debian |
-| `uimate-appium-linux-<version>-1.el10.x86_64.rpm` | RHEL 8 / 9 / 10, Rocky Linux, AlmaLinux |
+| `uimate-appium-linux_<version>_amd64.deb` | Ubuntu 20.04+ / Debian on x86-64 |
+| `uimate-appium-linux-<version>-1.el10.x86_64.rpm` | RHEL 10 on x86-64 |
 
-The RPM is built against the RHEL 8 ABI (glibc 2.28) and is forward-compatible with RHEL 9 and 10.
+The RPM bundles the checked-in EL10 x86-64 runtime. Compatibility with earlier
+RHEL releases is not claimed by the v0.0.56 release artifact.
+For X11, the configured EL10 repositories must provide `xdotool`, `xclip`, and
+`xsel`; the RPM declares all three as runtime dependencies.
 
 ## CI/CD Pipeline
 
@@ -41,10 +44,11 @@ Releases are fully automated via [`.github/workflows/release.yml`](.github/workf
 **What the workflow does:**
 
 1. Checks out the repo on an `ubuntu-22.04` runner
-2. Installs Node.js 20.19.0 and build tools (`dpkg-dev`, `fakeroot`, `rpm`)
-3. Builds the `.deb` package — bundles Node.js, Appium 2.19.0, and the driver offline
-4. Builds the `.rpm` package using the pre-compiled `native/dist/el10/libstdspalinux.so` and `UIMATE_ALLOW_CROSS_BUILD=1`
-5. Creates a GitHub Release with auto-generated notes and uploads both packages
+2. Installs Node.js 20.19.0 and build tools (`binutils`, `dpkg-dev`, `fakeroot`, `rpm`)
+3. Installs dependencies from the committed Yarn lockfile
+4. Builds the `.deb` package — bundles Node.js, Appium 2.19.0, and the driver offline
+5. Builds the EL10 x86-64 `.rpm` package using `native/dist/el10/libstdspalinux.so`
+6. Creates a GitHub Release with auto-generated notes and uploads both packages
 
 **To cut a new release:**
 
@@ -97,9 +101,9 @@ Or install a specific release package directly:
 
 ```bash
 # Ubuntu
-sudo apt-get install -y ./uimate-appium-linux_<version>_all.deb
+sudo apt-get install -y ./uimate-appium-linux_<version>_amd64.deb
 
-# RHEL / Rocky / Alma
+# RHEL 10 x86-64
 sudo dnf install -y ./uimate-appium-linux-<version>-1.el10.x86_64.rpm
 ```
 
@@ -129,12 +133,49 @@ Capability | Required | Description
 `platformName` | yes | Must be `Linux`.
 `appium:automationName` | yes | Must be `atspi2` (case-insensitive).
 `appium:appName` | yes | App binary or path (for example `yelp` or `/bin/yelp`).
+`appium:appArguments` | no | Argument array passed directly to the application without a shell.
+`appium:attachToRunningApp` | no | Attach to an existing application instead of killing or launching it. Defaults to `false`.
 `appium:linuxBackend` | no | `auto` (default), `x11`, `wayland`.
 `appium:waylandRestoreToken` | no | Optional previously issued portal restore token.
 `appium:waylandTokenStorePath` | no | Optional token store path. Default: `~/.config/appium-linux-driver/portal-restore-tokens.json`.
 `appium:waylandAutoShare` | no | Wayland-only. Defaults to `true`; auto-accepts XDG portal consent via AT-SPI (`xdg-desktop-portal-gnome` dialog).
 
 `linuxBackend=auto` chooses Wayland when `XDG_SESSION_TYPE=wayland` or `WAYLAND_DISPLAY` is present; otherwise it chooses X11.
+
+### Launch With Arguments
+
+Pass each command-line token as a separate array entry. The driver launches the
+configured application directly and does not create a shell wrapper:
+
+```json
+{
+  "platformName": "Linux",
+  "appium:automationName": "atspi2",
+  "appium:appName": "/usr/bin/horizon-client-next",
+  "appium:appArguments": [
+    "--serverURL=localhost:4443",
+    "--desktopName=desktop1",
+    "--protocol=BLAST",
+    "--nonInteractive"
+  ],
+  "appium:linuxBackend": "x11"
+}
+```
+
+### Attach To A Running Application
+
+Set `appium:attachToRunningApp` when another process owns application launch.
+Ending the Appium session does not terminate an attached application:
+
+```json
+{
+  "platformName": "Linux",
+  "appium:automationName": "atspi2",
+  "appium:appName": "/usr/bin/horizon-client-next",
+  "appium:attachToRunningApp": true,
+  "appium:linuxBackend": "x11"
+}
+```
 
 ## Which Capabilities To Pass
 

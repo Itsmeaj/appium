@@ -1,4 +1,4 @@
-# Unified Installer (Ubuntu + RHEL)
+# Unified Installer (Ubuntu + RHEL 10)
 
 This project ships OS-specific unified installer flows that bundle runtime + Appium driver artifact.
 
@@ -6,7 +6,7 @@ This project ships OS-specific unified installer flows that bundle runtime + App
 
 ### What It Installs
 
-`uimate-appium-linux_<version>_all.deb` installs:
+`uimate-appium-linux_<version>_amd64.deb` installs:
 
 - UImate runtime files (including `/usr/local/lib/libstdspalinux.so`)
 - Node.js 20.x under `/opt/uimate/`
@@ -28,66 +28,69 @@ git lfs install
 git lfs pull --include='installers/*'
 ./packaging/deb/build-unified-installer.sh \
   --runtime-deb installers/stdspalinux-ubuntu_20_04.deb \
-  --appium-spec appium@beta \
-  --version 0.0.42-uimate8
+  --appium-spec appium@2.19.0 \
+  --version 0.0.56
 ```
 
 Output:
 
-- `dist/installers/uimate-appium-linux_0.0.42-uimate8_all.deb`
+- `dist/installers/uimate-appium-linux_0.0.56_amd64.deb`
 
 ### Install
 
 ```bash
-sudo apt-get install -y ./dist/installers/uimate-appium-linux_0.0.42-uimate8_all.deb
+sudo apt-get install -y ./dist/installers/uimate-appium-linux_0.0.56_amd64.deb
 ```
 
 ## RHEL `.rpm` Flow
 
 ### Scope
 
-- RHEL 8/9/10
+- RHEL 10
 - x86_64
 - GNOME sessions
+
+The v0.0.56 release does not claim compatibility with earlier RHEL releases.
+The EL10 X11 runtime invokes `xdotool`, `xclip`, and `xsel`; these are declared
+RPM dependencies and must be available from the target machine's configured
+repositories.
 
 ### Runtime Artifact Requirement
 
 RHEL RPM build expects EL-specific runtime artifact at:
 
-- `native/dist/el8/libstdspalinux.so`
-- `native/dist/el9/libstdspalinux.so`
 - `native/dist/el10/libstdspalinux.so`
 
 Generate/stage runtime artifact:
 
 ```bash
-./native/scripts/build-runtime.sh --el-major 9 --prebuilt-lib /path/to/libstdspalinux.so
+./native/scripts/build-runtime.sh --el-major 10 --prebuilt-lib /path/to/libstdspalinux.so
 ```
 
 Validate runtime guardrail (no `xdotool`/`xclip`/`xsel` dependency):
 
 ```bash
-./native/scripts/verify-no-legacy-cli-deps.sh --lib native/dist/el9/libstdspalinux.so
+./native/scripts/verify-no-legacy-cli-deps.sh --lib native/dist/el10/libstdspalinux.so
 ```
 
 ### Build RPM
 
 ```bash
 ./packaging/rpm/build-unified-installer.sh \
-  --el-major 9 \
-  --appium-spec appium@beta \
-  --version 0.0.42-uimate8
+  --el-major 10 \
+  --appium-spec appium@2.19.0 \
+  --version 0.0.56
 ```
 
 Outputs:
 
-- `dist/installers/uimate-appium-linux-0.0.42-uimate8-1.el9.x86_64.rpm`
-- `dist/installers/uimate-appium-linux-0.0.42-uimate8-1.el9.x86_64.rpm.sha256`
+- `dist/installers/uimate-appium-linux-0.0.56-1.el10.x86_64.rpm`
+- `dist/installers/uimate-appium-linux-0.0.56-1.el10.x86_64.rpm.sha256`
 
 ### Install RPM
 
 ```bash
-sudo dnf install -y ./dist/installers/uimate-appium-linux-0.0.42-uimate8-1.el9.x86_64.rpm
+sudo dnf install -y ./dist/installers/uimate-appium-linux-0.0.56-1.el10.x86_64.rpm
 ```
 
 ## Verify Installation (Both Flows)
@@ -125,9 +128,9 @@ Build with a new version and install again (`apt`/`dnf` handles upgrade):
 ```bash
 # Ubuntu
 ./packaging/deb/build-unified-installer.sh --runtime-deb installers/stdspalinux-ubuntu_20_04.deb --appium-spec appium@beta --version 0.0.42-uimate9
-sudo apt-get install -y ./dist/installers/uimate-appium-linux_0.0.42-uimate9_all.deb
+sudo apt-get install -y ./dist/installers/uimate-appium-linux_0.0.42-uimate9_amd64.deb
 
-# RHEL 9
-./packaging/rpm/build-unified-installer.sh --el-major 9 --appium-spec appium@beta --version 0.0.42-uimate9
-sudo dnf install -y ./dist/installers/uimate-appium-linux-0.0.42-uimate9-1.el9.x86_64.rpm
+# RHEL 10 x86-64
+./packaging/rpm/build-unified-installer.sh --el-major 10 --appium-spec appium@beta --version 0.0.42-uimate9
+sudo dnf install -y ./dist/installers/uimate-appium-linux-0.0.42-uimate9-1.el10.x86_64.rpm
 ```

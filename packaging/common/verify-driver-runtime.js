@@ -14,10 +14,11 @@ function fail (message, extra) {
   process.exit(1);
 }
 
-const driverRoot = process.argv[2];
-if (!driverRoot) {
+const driverRootArg = process.argv[2];
+if (!driverRootArg) {
   fail('Usage: verify-driver-runtime.js <driver-root>');
 }
+const driverRoot = path.resolve(driverRootArg);
 
 const packageJsonPath = path.join(driverRoot, 'package.json');
 if (!fs.existsSync(packageJsonPath)) {
@@ -62,13 +63,10 @@ const mainEntry = path.join(driverRoot, pkg.main || 'index.js');
 try {
   require(mainEntry);
 } catch (error) {
-  // Native modules may not be compilable in the build environment (e.g. CI without
-  // libstdspalinux.so). Warn but don't fail — postinst verifies on the target machine.
-  process.stderr.write(JSON.stringify({
-    warn: 'Driver entrypoint could not be loaded in build environment (native module)',
+  fail('Driver entrypoint could not be loaded', {
     mainEntry,
     error: error && error.message ? error.message : String(error),
-  }, null, 2) + '\n');
+  });
 }
 
 process.stdout.write(JSON.stringify({

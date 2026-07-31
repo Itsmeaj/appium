@@ -8,6 +8,8 @@ Target platform:
 - x86_64
 - GNOME desktop sessions
 
+The v0.0.56 release package is validated only as an EL10 x86-64 artifact.
+
 Backend rollout order:
 
 1. RHEL 9 Wayland
@@ -23,7 +25,7 @@ If you already have a built runtime library:
 
 ```bash
 ./native/scripts/build-runtime.sh \
-  --el-major 9 \
+  --el-major 10 \
   --prebuilt-lib /path/to/libstdspalinux.so
 ```
 
@@ -31,21 +33,21 @@ Validate guardrail:
 
 ```bash
 ./native/scripts/verify-no-legacy-cli-deps.sh \
-  --lib native/dist/el9/libstdspalinux.so
+  --lib native/dist/el10/libstdspalinux.so
 ```
 
 ## 2. Build Unified RPM
 
 ```bash
 ./packaging/rpm/build-unified-installer.sh \
-  --el-major 9 \
-  --version 0.0.42-uimate8
+  --el-major 10 \
+  --version 0.0.56
 ```
 
 ## 3. Install RPM
 
 ```bash
-sudo dnf install -y ./dist/installers/uimate-appium-linux-0.0.42-uimate8-1.el9.x86_64.rpm
+sudo dnf install -y ./dist/installers/uimate-appium-linux-0.0.56-1.el10.x86_64.rpm
 ```
 
 ## 4. Start Appium

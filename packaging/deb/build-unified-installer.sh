@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 PACKAGE_NAME="uimate-appium-linux"
-PACKAGE_ARCH="all"
+PACKAGE_ARCH="amd64"
 OUTPUT_DIR="${REPO_ROOT}/dist/installers"
 RUNTIME_DEB=""
 DRIVER_STAGE_DIR=""
@@ -92,13 +92,28 @@ if [[ "$(head -n1 "${RUNTIME_DEB}")" == "version https://git-lfs.github.com/spec
   exit 1
 fi
 
-for cmd in dpkg-deb fakeroot; do
+for cmd in dpkg dpkg-deb fakeroot node npm corepack make g++ python3; do
   if ! command -v "${cmd}" >/dev/null 2>&1; then
     echo "Error: required command not found: ${cmd}" >&2
     echo "Install build tools with: sudo apt-get install -y dpkg-dev fakeroot" >&2
     exit 1
   fi
 done
+
+BUILD_ARCH="$(dpkg --print-architecture)"
+if [[ "${BUILD_ARCH}" != "${PACKAGE_ARCH}" ]]; then
+  echo "Error: Debian installer must be built on ${PACKAGE_ARCH}; detected build architecture: ${BUILD_ARCH}." >&2
+  exit 1
+fi
+
+if ! RUNTIME_ARCH="$(dpkg-deb -f "${RUNTIME_DEB}" Architecture 2>/dev/null)"; then
+  echo "Error: unable to read Architecture from runtime package: ${RUNTIME_DEB}" >&2
+  exit 1
+fi
+if [[ "${RUNTIME_ARCH}" != "${PACKAGE_ARCH}" ]]; then
+  echo "Error: runtime package architecture must be ${PACKAGE_ARCH}; detected: ${RUNTIME_ARCH}." >&2
+  exit 1
+fi
 
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "${WORK_DIR}"' EXIT
@@ -143,7 +158,12 @@ build_driver_bundle() {
   rm -rf "${DRIVER_STAGE_DIR}"
   mkdir -p "${DRIVER_STAGE_DIR}/build"
   cp -R "${REPO_ROOT}/build/." "${DRIVER_STAGE_DIR}/build/"
-  cp "${REPO_ROOT}/index.js" "${REPO_ROOT}/LICENSE" "${REPO_ROOT}/package.json" "${DRIVER_STAGE_DIR}/"
+  cp \
+    "${REPO_ROOT}/index.js" \
+    "${REPO_ROOT}/LICENSE" \
+    "${REPO_ROOT}/package.json" \
+    "${REPO_ROOT}/yarn.lock" \
+    "${DRIVER_STAGE_DIR}/"
 
   DRIVER_PACKAGE_JSON="${DRIVER_STAGE_DIR}/package.json" node <<'EOF'
 const fs = require('fs');
@@ -163,10 +183,33 @@ EOF
   install_log="${WORK_DIR}/driver-package-install.log"
   (
     cd "${DRIVER_STAGE_DIR}"
-    if ! NPM_CONFIG_CACHE="${WORK_DIR}/npm-cache" npm install --omit=dev --no-package-lock --legacy-peer-deps --ignore-scripts > "${install_log}" 2>&1; then
+    if ! YARN_CACHE_FOLDER="${WORK_DIR}/yarn-cache" corepack yarn@1.22.22 install \
+      --production=true \
+      --frozen-lockfile \
+      --ignore-scripts \
+      --non-interactive > "${install_log}" 2>&1; then
       cat "${install_log}" >&2 || true
       exit 1
     fi
+
+    NPM_CONFIG_CACHE="${WORK_DIR}/npm-cache" npm rebuild sharp --foreground-scripts
+    SHARP_PACKAGE_JSON="${DRIVER_STAGE_DIR}/node_modules/sharp/package.json" node <<'NODEEOF'
+const fs = require('fs');
+const packagePath = process.env.SHARP_PACKAGE_JSON;
+const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+pkg.files = [...new Set([...(pkg.files || []), 'build/Release/*.node', 'vendor/**'])];
+fs.writeFileSync(packagePath, `${JSON.stringify(pkg, null, 2)}\n`);
+NODEEOF
+
+    npm_node_gyp="$(npm root -g)/npm/node_modules/node-gyp/bin/node-gyp.js"
+    if [[ ! -f "${npm_node_gyp}" ]]; then
+      echo "Error: npm-bundled node-gyp was not found: ${npm_node_gyp}" >&2
+      exit 1
+    fi
+    (
+      cd node_modules/@stdspa/stdspalinux_temp
+      node "${npm_node_gyp}" rebuild
+    )
   )
 
   node "${REPO_ROOT}/packaging/common/${VERIFY_DRIVER_RUNTIME_NAME}" "${DRIVER_STAGE_DIR}"
@@ -190,12 +233,18 @@ EOF
     "package/build/index.js" \
     "package/node_modules/@babel/runtime/helpers/interopRequireDefault.js" \
     "package/node_modules/@stdspa/stdspalinux_temp/package.json" \
-    "package/node_modules/sharp/package.json"; do
+    "package/node_modules/@stdspa/stdspalinux_temp/build/Release/NativeExtension.node" \
+    "package/node_modules/sharp/package.json" \
+    "package/node_modules/sharp/build/Release/sharp-linux-x64.node"; do
     if ! grep -Fxq "${required_path}" <<<"${bundle_listing}"; then
       echo "Error: bundled driver artifact is missing required runtime path: ${required_path}" >&2
       exit 1
     fi
   done
+  if ! grep -Eq '^package/node_modules/sharp/vendor/.+/linux-x64/lib/libvips-cpp\.so\.42$' <<<"${bundle_listing}"; then
+    echo "Error: bundled driver artifact is missing the sharp libvips runtime." >&2
+    exit 1
+  fi
   cp "${DRIVER_STAGE_DIR}/${tgz_name}" "${DRIVER_OFFLINE_DIR}/${DRIVER_BUNDLE_NAME}"
 }
 
