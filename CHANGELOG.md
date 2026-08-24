@@ -27,10 +27,6 @@ All notable changes to this project are documented here. This project adheres to
   `appium driver install` path.
 - Declared compatibility with Appium 2 and Appium 3.
 
-### Security
-- `linux: shell` now requires the Appium server feature flag
-  `atspi2:shell` (or relaxed security).
-
 ## [0.0.55]
 
 ### Added

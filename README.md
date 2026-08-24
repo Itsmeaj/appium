@@ -269,18 +269,11 @@ Notes:
 | `linux: copy` | `{str}` | Copies string to the system clipboard. |
 | `linux: getClipboard` | none | Returns clipboard content. |
 | `linux: click` | `[elementId]` | Clicks the given element. |
-| `linux: shell` | `{cmd}` | Executes a shell command and returns stdout. Disabled unless the server enables `atspi2:shell`. |
+| `linux: shell` | `{cmd}` | Executes a shell command and returns stdout. |
 
 ```python
 find_btn = driver.find_element("name", "Find")
 driver.execute_script("linux: click", [find_btn.id])
-```
-
-The shell extension is intentionally disabled by default because it runs commands
-on the Appium host. A server administrator can opt in with:
-
-```bash
-appium --allow-insecure=atspi2:shell
 ```
 
 ## Screenshots

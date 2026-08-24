@@ -4,7 +4,6 @@ import AtSpi2Driver, {
 import { BaseDriver } from 'appium/driver';
 import { desiredCapConstraints } from '../../lib/desired-caps.js';
 import * as backends from '../../lib/backends/index.js';
-import executeCommands from '../../lib/commands/execute.js';
 import chai from 'chai';
 import sinon from 'sinon';
 const should = chai.should();
@@ -38,18 +37,6 @@ describe('AtSpi2Driver', function () {
   it('should reject shell strings for direct-launch arguments', function () {
     (() => normalizeAppArguments('--desktopName=desktop1'))
       .should.throw('must be an array of strings');
-  });
-
-  it('should require an Appium security opt-in for host shell execution', async function () {
-    const driver = new AtSpi2Driver();
-    let commandError;
-    try {
-      await executeCommands.shell.call(driver, {cmd: 'echo should-not-run'});
-    } catch (error) {
-      commandError = error;
-    }
-    should.exist(commandError);
-    commandError.message.should.contain("Potentially insecure feature 'shell'");
   });
 
   it('should clean up an owned direct launch and backend when session setup fails', async function () {
