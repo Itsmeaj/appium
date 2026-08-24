@@ -1,0 +1,35 @@
+name: Published Package Smoke Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_spec:
+        description: Published npm package and version to verify
+        required: true
+        default: '@itsmeaj/appium-linux-driver@0.1.0'
+
+permissions:
+  contents: read
+
+jobs:
+  appium-install:
+    name: Appium ${{ matrix.appium }} registry install
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        appium: ['2.19.0', '3.4.0']
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.0'
+      - name: Install Appium and the published driver
+        env:
+          APPIUM_HOME: ${{ runner.temp }}/appium-home
+          NPM_CONFIG_PREFIX: ${{ runner.temp }}/npm-prefix
+          PACKAGE_SPEC: ${{ inputs.package_spec }}
+        run: |
+          mkdir -p "$NPM_CONFIG_PREFIX/lib/node_modules"
+          npm install --prefix "$RUNNER_TEMP/appium" --no-audit --no-fund "appium@${{ matrix.appium }}"
+          "$RUNNER_TEMP/appium/node_modules/.bin/appium" driver install --source=npm "$PACKAGE_SPEC"
+          "$RUNNER_TEMP/appium/node_modules/.bin/appium" driver list --installed
