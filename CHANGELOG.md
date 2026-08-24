@@ -5,6 +5,12 @@ All notable changes to this project are documented here. This project adheres to
 
 ## [Unreleased]
 
+## [0.1.1]
+
+### Fixed
+- Use a Node.js 20-compatible `node-gyp` when npm builds the native AT-SPI
+  shim during a standard Appium driver installation.
+
 ## [0.1.0]
 
 ### Added
