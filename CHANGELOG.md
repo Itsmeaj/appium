@@ -26,6 +26,7 @@ All notable changes to this project are documented here. This project adheres to
   prerequisites, the cross-distro support matrix, and the standard
   `appium driver install` path.
 - Declared compatibility with Appium 2 and Appium 3.
+- Published the maintained driver under the `@itsmeaj` npm scope.
 
 ## [0.0.55]
 

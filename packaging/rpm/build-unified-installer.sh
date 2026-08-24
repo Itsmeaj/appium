@@ -7,7 +7,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 PACKAGE_NAME="uimate-appium-linux"
 PACKAGE_ARCH="x86_64"
 OUTPUT_DIR="${REPO_ROOT}/dist/installers"
-DRIVER_BUNDLE_NAME="stdspa-appium-linux-driver.tgz"
+DRIVER_BUNDLE_NAME="itsmeaj-appium-linux-driver.tgz"
 VERIFY_DRIVER_RUNTIME_NAME="verify-driver-runtime.js"
 APPIUM_SPEC="appium@2.19.0"
 
@@ -289,7 +289,7 @@ cat > "${PAYLOAD_ROOT}/usr/local/bin/uimate-appium-doctor" <<'DOCTOR'
 set -euo pipefail
 
 APPIUM_HOME_DIR="${APPIUM_HOME:-/opt/uimate/appium-home}"
-DRIVER_DIR="${APPIUM_HOME_DIR}/node_modules/@stdspa/appium-linux-driver"
+DRIVER_DIR="${APPIUM_HOME_DIR}/node_modules/@itsmeaj/appium-linux-driver"
 VERIFY_SCRIPT="/opt/uimate/offline/verify-driver-runtime.js"
 REQUESTED_APPIUM_SPEC="$(cat /opt/uimate/offline/appium-spec.txt 2>/dev/null || echo unknown)"
 
@@ -380,7 +380,7 @@ export PATH="/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH
 NODE_VERSION="${UIMATE_NODE_VERSION:-20.19.0}"
 APPIUM_HOME_DIR="/opt/uimate/appium-home"
 PROFILE_FILE="/etc/profile.d/uimate-appium.sh"
-DRIVER_BUNDLE="/opt/uimate/offline/stdspa-appium-linux-driver.tgz"
+DRIVER_BUNDLE="/opt/uimate/offline/itsmeaj-appium-linux-driver.tgz"
 VERIFY_DRIVER_RUNTIME_SCRIPT="/opt/uimate/offline/verify-driver-runtime.js"
 APPIUM_REQUESTED_SPEC_FILE="/opt/uimate/offline/appium-spec.txt"
 APPIUM_SPEC_DEFAULT="@@APPIUM_SPEC@@"
@@ -389,7 +389,7 @@ if [[ "${APPIUM_SPEC_DEFAULT}" == *"@@"* ]] && [[ -f "${APPIUM_REQUESTED_SPEC_FI
   APPIUM_SPEC_DEFAULT="$(cat "${APPIUM_REQUESTED_SPEC_FILE}")"
 fi
 APPIUM_SPEC="${UIMATE_APPIUM_SPEC:-${APPIUM_SPEC_DEFAULT}}"
-DRIVER_INSTALL_DIR="${APPIUM_HOME_DIR}/node_modules/@stdspa/appium-linux-driver"
+DRIVER_INSTALL_DIR="${APPIUM_HOME_DIR}/node_modules/@itsmeaj/appium-linux-driver"
 
 log() {
   echo "[uimate-installer] $*"
@@ -725,7 +725,7 @@ exit 0
 %dir /opt/uimate
 %dir /opt/uimate/offline
 /opt/uimate/offline/appium-spec.txt
-/opt/uimate/offline/stdspa-appium-linux-driver.tgz
+/opt/uimate/offline/itsmeaj-appium-linux-driver.tgz
 /opt/uimate/offline/verify-driver-runtime.js
 
 %changelog
