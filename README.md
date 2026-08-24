@@ -1,8 +1,8 @@
 Appium Linux Driver
 ====
 
-[![NPM version](https://img.shields.io/npm/v/@stdspa/appium-linux-driver.svg)](https://npmjs.org/package/@stdspa/appium-linux-driver)
-[![Downloads](https://img.shields.io/npm/dm/@stdspa/appium-linux-driver.svg)](https://npmjs.org/package/@stdspa/appium-linux-driver)
+[![NPM version](https://img.shields.io/npm/v/@itsmeaj/appium-linux-driver.svg)](https://npmjs.org/package/@itsmeaj/appium-linux-driver)
+[![Downloads](https://img.shields.io/npm/dm/@itsmeaj/appium-linux-driver.svg)](https://npmjs.org/package/@itsmeaj/appium-linux-driver)
 [![Build and Release](https://github.com/Itsmeaj/appium/actions/workflows/release.yml/badge.svg)](https://github.com/Itsmeaj/appium/actions/workflows/release.yml)
 
 **Desktop application automation for Linux, through Appium — on both X11 and Wayland.**
@@ -59,7 +59,7 @@ is open, what is native, and the roadmap toward a fully self-contained build.
 If you already have [Appium 2 or 3](https://appium.io) installed:
 
 ```bash
-appium driver install --source=npm @stdspa/appium-linux-driver
+appium driver install --source=npm @itsmeaj/appium-linux-driver
 ```
 
 Then install the native AT-SPI runtime prerequisite (see
@@ -136,7 +136,7 @@ Releases are fully automated via [`.github/workflows/release.yml`](.github/workf
 
 ```bash
 npm install -g appium
-appium driver install --source=npm @stdspa/appium-linux-driver
+appium driver install --source=npm @itsmeaj/appium-linux-driver
 ```
 
 Or install a specific release package directly:
