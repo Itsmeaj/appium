@@ -10,6 +10,7 @@ OUTPUT_DIR="${REPO_ROOT}/dist/installers"
 RUNTIME_DEB=""
 DRIVER_STAGE_DIR=""
 DRIVER_OFFLINE_DIR=""
+APPIUM_VERIFY_DIR=""
 DRIVER_BUNDLE_NAME="itsmeaj-appium-linux-driver.tgz"
 VERIFY_DRIVER_RUNTIME_NAME="verify-driver-runtime.js"
 APPIUM_SPEC="appium@2.19.0"
@@ -124,6 +125,7 @@ BIN_DIR="${PKG_ROOT}/usr/local/bin"
 RUNTIME_CTRL_DIR="${WORK_DIR}/runtime-control"
 DRIVER_STAGE_DIR="${WORK_DIR}/driver-package"
 DRIVER_OFFLINE_DIR="${PKG_ROOT}/opt/uimate/offline"
+APPIUM_VERIFY_DIR="${WORK_DIR}/appium-verification"
 
 mkdir -p "${DEBIAN_DIR}" "${BIN_DIR}" "${RUNTIME_CTRL_DIR}" "${DRIVER_OFFLINE_DIR}" "${OUTPUT_DIR}"
 
@@ -212,7 +214,14 @@ NODEEOF
     )
   )
 
-  node "${REPO_ROOT}/packaging/common/${VERIFY_DRIVER_RUNTIME_NAME}" "${DRIVER_STAGE_DIR}"
+  NPM_CONFIG_CACHE="${WORK_DIR}/npm-cache" npm install \
+    --prefix "${APPIUM_VERIFY_DIR}" \
+    --ignore-scripts \
+    --no-audit \
+    --no-fund \
+    "${APPIUM_SPEC}"
+  NODE_PATH="${APPIUM_VERIFY_DIR}/node_modules${NODE_PATH:+:${NODE_PATH}}" \
+    node "${REPO_ROOT}/packaging/common/${VERIFY_DRIVER_RUNTIME_NAME}" "${DRIVER_STAGE_DIR}"
 
   local tgz_name
   tgz_name="$(

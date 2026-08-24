@@ -50,3 +50,36 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/appium" --no-audit --no-fund "appium@${{ matrix.appium }}"
           APPIUM_HOME="$RUNNER_TEMP/appium-home" "$RUNNER_TEMP/appium/node_modules/.bin/appium" driver install --source=local "$GITHUB_WORKSPACE"
           APPIUM_HOME="$RUNNER_TEMP/appium-home" "$RUNNER_TEMP/appium/node_modules/.bin/appium" driver list --installed
+
+  installer-packaging:
+    name: Build Linux installers
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.0'
+      - name: Install build tools
+        run: sudo apt-get install -y binutils dpkg-dev fakeroot rpm
+      - name: Install locked dependencies
+        run: corepack yarn@1.22.22 install --frozen-lockfile --ignore-scripts --non-interactive
+      - name: Build driver
+        run: npm run build
+      - name: Build .deb (Ubuntu)
+        run: |
+          ./packaging/deb/build-unified-installer.sh \
+            --runtime-deb installers/stdspalinux-ubuntu_20_04.deb \
+            --appium-spec appium@2.19.0
+      - name: Build .rpm (RHEL 10)
+        env:
+          UIMATE_ALLOW_CROSS_BUILD: "1"
+        run: |
+          ./packaging/rpm/build-unified-installer.sh \
+            --el-major 10 \
+            --runtime-lib native/dist/el10/libstdspalinux.so \
+            --appium-spec appium@2.19.0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-installers
+          path: dist/installers/*
+          if-no-files-found: error

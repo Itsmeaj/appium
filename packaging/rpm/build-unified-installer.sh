@@ -165,6 +165,7 @@ trap 'rm -rf "${WORK_DIR}"' EXIT
 RPM_TOP="${WORK_DIR}/rpmbuild"
 PAYLOAD_ROOT="${WORK_DIR}/payload"
 DRIVER_STAGE_DIR="${WORK_DIR}/driver-package"
+APPIUM_VERIFY_DIR="${WORK_DIR}/appium-verification"
 
 mkdir -p \
   "${RPM_TOP}/BUILD" \
@@ -242,7 +243,14 @@ NODEEOF
     )
   )
 
-  node "${REPO_ROOT}/packaging/common/${VERIFY_DRIVER_RUNTIME_NAME}" "${DRIVER_STAGE_DIR}"
+  NPM_CONFIG_CACHE="${WORK_DIR}/npm-cache" npm install \
+    --prefix "${APPIUM_VERIFY_DIR}" \
+    --ignore-scripts \
+    --no-audit \
+    --no-fund \
+    "${APPIUM_SPEC}"
+  NODE_PATH="${APPIUM_VERIFY_DIR}/node_modules${NODE_PATH:+:${NODE_PATH}}" \
+    node "${REPO_ROOT}/packaging/common/${VERIFY_DRIVER_RUNTIME_NAME}" "${DRIVER_STAGE_DIR}"
 
   local tgz_name
   tgz_name="$(
