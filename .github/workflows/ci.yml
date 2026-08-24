@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main, community-readiness]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20.19.0', '22.12.0']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install locked dependencies
+        run: corepack yarn@1.22.22 install --frozen-lockfile --ignore-scripts --non-interactive
+      - run: npm test
+      - run: npm run test:package
+
+  appium-compatibility:
+    name: Appium ${{ matrix.appium }} local install
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        appium: ['2.19.0', '3.4.0']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.0'
+      - name: Install and build the driver
+        run: |
+          corepack yarn@1.22.22 install --frozen-lockfile --ignore-scripts --non-interactive
+          npm run build
+      - name: Install Appium and load the local driver
+        env:
+          NPM_CONFIG_PREFIX: ${{ runner.temp }}/npm-prefix
+        run: |
+          mkdir -p "$NPM_CONFIG_PREFIX/lib/node_modules"
+          npm install --prefix "$RUNNER_TEMP/appium" --no-audit --no-fund "appium@${{ matrix.appium }}"
+          APPIUM_HOME="$RUNNER_TEMP/appium-home" "$RUNNER_TEMP/appium/node_modules/.bin/appium" driver install --source=local "$GITHUB_WORKSPACE"
+          APPIUM_HOME="$RUNNER_TEMP/appium-home" "$RUNNER_TEMP/appium/node_modules/.bin/appium" driver list --installed

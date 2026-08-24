@@ -20,10 +20,10 @@ usage() {
 Build a unified RPM installer for RHEL-family systems.
 
 Usage:
-  packaging/rpm/build-unified-installer.sh --el-major 8|9|10 [options]
+  packaging/rpm/build-unified-installer.sh --el-major 10 [options]
 
 Required:
-  --el-major N             Target RHEL major: 8, 9, or 10
+  --el-major N             Target Enterprise Linux major. This release supports 10.
 
 Optional:
   --runtime-lib PATH       Path to prebuilt libstdspalinux.so for selected EL major.
@@ -83,13 +83,18 @@ if [[ -z "${EL_MAJOR}" ]]; then
   exit 1
 fi
 
-if [[ "${EL_MAJOR}" != "8" && "${EL_MAJOR}" != "9" && "${EL_MAJOR}" != "10" ]]; then
-  echo "Error: --el-major must be one of: 8, 9, 10" >&2
+if [[ "${EL_MAJOR}" != "10" ]]; then
+  echo "Error: this release only builds the validated EL10 x86_64 RPM; received EL${EL_MAJOR}." >&2
   exit 1
 fi
 
 if [[ "$(uname -s)" != "Linux" ]]; then
   echo "Error: RPM installer builds must run on Linux because the bundled driver contains Linux-native runtime dependencies." >&2
+  exit 1
+fi
+
+if [[ "$(uname -m)" != "x86_64" ]]; then
+  echo "Error: RPM installer must be built on x86_64; detected: $(uname -m)." >&2
   exit 1
 fi
 
@@ -126,17 +131,30 @@ if [[ ! -f "${RUNTIME_LIB}" ]]; then
   exit 1
 fi
 
-VERIFY_SCRIPT="${REPO_ROOT}/native/scripts/verify-no-legacy-cli-deps.sh"
-# Skip legacy CLI dependency check — the native lib contains xdotool/xclip
-# string references for the X11 backend path, but Wayland (RHEL 10) never
-# invokes them.  This is a known pre-existing condition.
-if [[ -x "${VERIFY_SCRIPT}" ]]; then
-  echo "Note: skipping legacy CLI dependency check (Wayland-only packaging)"
-fi
-
-for cmd in rpmbuild tar gzip node npm; do
+for cmd in rpmbuild tar gzip node npm corepack make g++ python3 readelf strings; do
   if ! command -v "${cmd}" >/dev/null 2>&1; then
     echo "Error: required command not found: ${cmd}" >&2
+    exit 1
+  fi
+done
+
+if ! RUNTIME_MACHINE="$(LC_ALL=C readelf -h "${RUNTIME_LIB}" 2>/dev/null | awk -F: '$1 ~ /^[[:space:]]*Machine$/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')"; then
+  echo "Error: unable to inspect runtime library architecture: ${RUNTIME_LIB}" >&2
+  exit 1
+fi
+if [[ "${RUNTIME_MACHINE}" != "Advanced Micro Devices X86-64" ]]; then
+  echo "Error: runtime library must be an x86_64 ELF; detected machine: ${RUNTIME_MACHINE:-unknown}." >&2
+  exit 1
+fi
+
+VERIFY_SCRIPT="${REPO_ROOT}/native/scripts/verify-no-legacy-cli-deps.sh"
+# The current EL10 runtime still invokes these tools on its X11 paths. Keep
+# that dependency explicit until the native implementation no longer shells
+# out, at which point the no-legacy guard can replace this check.
+for x11_tool in xdotool xclip xsel; do
+  if ! strings "${RUNTIME_LIB}" | grep -F "${x11_tool}" >/dev/null; then
+    echo "Error: EL10 runtime/package dependency contract is stale: ${x11_tool} reference not found." >&2
+    echo "Update the RPM requirements and re-enable ${VERIFY_SCRIPT} when the native runtime removes shell tooling." >&2
     exit 1
   fi
 done
@@ -170,7 +188,12 @@ build_driver_bundle() {
   rm -rf "${DRIVER_STAGE_DIR}"
   mkdir -p "${DRIVER_STAGE_DIR}/build"
   cp -R "${REPO_ROOT}/build/." "${DRIVER_STAGE_DIR}/build/"
-  cp "${REPO_ROOT}/index.js" "${REPO_ROOT}/LICENSE" "${REPO_ROOT}/package.json" "${DRIVER_STAGE_DIR}/"
+  cp \
+    "${REPO_ROOT}/index.js" \
+    "${REPO_ROOT}/LICENSE" \
+    "${REPO_ROOT}/package.json" \
+    "${REPO_ROOT}/yarn.lock" \
+    "${DRIVER_STAGE_DIR}/"
 
   DRIVER_PACKAGE_JSON="${DRIVER_STAGE_DIR}/package.json" node <<'NODEEOF'
 const fs = require('fs');
@@ -190,10 +213,33 @@ NODEEOF
   install_log="${WORK_DIR}/driver-package-install.log"
   (
     cd "${DRIVER_STAGE_DIR}"
-    if ! NPM_CONFIG_CACHE="${WORK_DIR}/npm-cache" npm install --omit=dev --no-package-lock --legacy-peer-deps --ignore-scripts > "${install_log}" 2>&1; then
+    if ! YARN_CACHE_FOLDER="${WORK_DIR}/yarn-cache" corepack yarn@1.22.22 install \
+      --production=true \
+      --frozen-lockfile \
+      --ignore-scripts \
+      --non-interactive > "${install_log}" 2>&1; then
       cat "${install_log}" >&2 || true
       exit 1
     fi
+
+    NPM_CONFIG_CACHE="${WORK_DIR}/npm-cache" npm rebuild sharp --foreground-scripts
+    SHARP_PACKAGE_JSON="${DRIVER_STAGE_DIR}/node_modules/sharp/package.json" node <<'NODEEOF'
+const fs = require('fs');
+const packagePath = process.env.SHARP_PACKAGE_JSON;
+const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+pkg.files = [...new Set([...(pkg.files || []), 'build/Release/*.node', 'vendor/**'])];
+fs.writeFileSync(packagePath, `${JSON.stringify(pkg, null, 2)}\n`);
+NODEEOF
+
+    npm_node_gyp="$(npm root -g)/npm/node_modules/node-gyp/bin/node-gyp.js"
+    if [[ ! -f "${npm_node_gyp}" ]]; then
+      echo "Error: npm-bundled node-gyp was not found: ${npm_node_gyp}" >&2
+      exit 1
+    fi
+    (
+      cd node_modules/@stdspa/stdspalinux_temp
+      node "${npm_node_gyp}" rebuild
+    )
   )
 
   node "${REPO_ROOT}/packaging/common/${VERIFY_DRIVER_RUNTIME_NAME}" "${DRIVER_STAGE_DIR}"
@@ -217,12 +263,18 @@ NODEEOF
     "package/build/index.js" \
     "package/node_modules/@babel/runtime/helpers/interopRequireDefault.js" \
     "package/node_modules/@stdspa/stdspalinux_temp/package.json" \
-    "package/node_modules/sharp/package.json"; do
+    "package/node_modules/@stdspa/stdspalinux_temp/build/Release/NativeExtension.node" \
+    "package/node_modules/sharp/package.json" \
+    "package/node_modules/sharp/build/Release/sharp-linux-x64.node"; do
     if ! grep -Fxq "${required_path}" <<<"${bundle_listing}"; then
       echo "Error: bundled driver artifact is missing required runtime path: ${required_path}" >&2
       exit 1
     fi
   done
+  if ! grep -Eq '^package/node_modules/sharp/vendor/.+/linux-x64/lib/libvips-cpp\.so\.42$' <<<"${bundle_listing}"; then
+    echo "Error: bundled driver artifact is missing the sharp libvips runtime." >&2
+    exit 1
+  fi
 
   cp "${DRIVER_STAGE_DIR}/${tgz_name}" "${PAYLOAD_ROOT}/opt/uimate/offline/${DRIVER_BUNDLE_NAME}"
 }
@@ -302,7 +354,7 @@ License:        Apache-2.0
 URL:            https://github.com/Itsmeaj/appium
 BuildArch:      @@PACKAGE_ARCH@@
 Source0:        @@TARBALL_NAME@@
-Requires:       bash, ca-certificates, curl, tar, xz
+Requires:       bash, ca-certificates, curl, tar, xz, xdotool, xclip, xsel
 
 %description
 Unified runtime installer for UImate Appium Linux automation stack.

@@ -63,8 +63,6 @@ New builder:
 
 Produces:
 
-- `uimate-appium-linux-<version>-1.el8.x86_64.rpm`
-- `uimate-appium-linux-<version>-1.el9.x86_64.rpm`
 - `uimate-appium-linux-<version>-1.el10.x86_64.rpm`
 
 Installer behavior:

@@ -70,6 +70,7 @@ describe('Wayland token store', function () {
 
     data.token.should.eql('restore-token-1');
     should.exist(data.updatedAt);
+    (fs.statSync(tmpPath).mode & 0o777).should.eql(0o600);
 
     if (fs.existsSync(tmpPath)) {
       fs.unlinkSync(tmpPath);
@@ -372,6 +373,7 @@ describe('Wayland window command healing', function () {
 <windows>
   <window pid="42" wid="111" InputOutput="true" name="Main Window" class="GtkWindow" rect="[10,20,800,600]" states="[ACTIVE,SHOWING,VISIBLE]" tag="frame" window-type="normal"/>
   <window pid="42" wid="222" InputOutput="true" name="Untrusted Connection" class="GtkAlert" rect="[210,160,420,220]" states="[SHOWING,VISIBLE]" tag="alert" window-type="dialog"/>
+  <window pid="84" wid="333" InputOutput="true" name="Attached Window" class="GtkWindow" rect="[10,20,800,600]" states="[ACTIVE,SHOWING,VISIBLE]" tag="frame" window-type="normal"/>
 </windows>
   `;
 
@@ -386,6 +388,7 @@ describe('Wayland window command healing', function () {
       _win: {pid: 42, wid: 999, name: 'Gone'},
     };
     ctx.getWindowHandles = windowCommands.getWindowHandles.bind(ctx);
+    ctx._getWindowHandlesCore = windowCommands._getWindowHandlesCore.bind(ctx);
     ctx._getWinAndPid_FromWinId = windowCommands._getWinAndPid_FromWinId.bind(ctx);
     ctx._resolveBestAvailableWindow = windowCommands._resolveBestAvailableWindow.bind(ctx);
     ctx.getWindowHandle = windowCommands.getWindowHandle.bind(ctx);
@@ -411,6 +414,7 @@ describe('Wayland window command healing', function () {
     ctx._win.wid.should.eql(222);
     ctx._win.name.should.eql('Untrusted Connection');
   });
+
 });
 
 describe('Wayland transient selector routing', function () {
@@ -429,13 +433,10 @@ describe('Wayland transient selector routing', function () {
       _cache: new Map(),
       _validateOrUpdateWinInfo: () => true,
       _backendApis: {
+        a11y_clear_cache: () => {},
         a11y_getWindowUiHierachy: () => {
           nativeCalls += 1;
-          return `
-<frame name="AzWin11Cli" pid="42" rect="[0,0,1000,700]" states="[ACTIVE,SHOWING,VISIBLE]">
-  <menu name="Connection" rect="[20,30,120,30]"/>
-</frame>
-          `;
+          return '';
         },
         a11y_getWindowUiHierachyByHandle: () => {
           handleCalls += 1;
@@ -458,6 +459,6 @@ describe('Wayland transient selector routing', function () {
 
     should.exist(result);
     handleCalls.should.eql(1);
-    nativeCalls.should.eql(0);
+    nativeCalls.should.eql(1);
   });
 });

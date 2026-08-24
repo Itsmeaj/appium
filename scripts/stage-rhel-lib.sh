@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run on RHEL machine to find and stage libstdspalinux.so before building the RPM.
-# The EL8-compiled .so is forward-compatible with RHEL 8, 9, and 10.
+# The current release artifact is scoped to EL10 x86-64.
 #
 # Usage:
 #   ./scripts/stage-rhel-lib.sh [--lib /path/to/libstdspalinux.so]
@@ -8,7 +8,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-DEST="${REPO_ROOT}/native/dist/el8/libstdspalinux.so"
+DEST="${REPO_ROOT}/native/dist/el10/libstdspalinux.so"
 EXPLICIT_LIB=""
 
 while [[ $# -gt 0 ]]; do
@@ -28,7 +28,7 @@ if [[ -n "$EXPLICIT_LIB" ]]; then
     exit 1
   fi
   cp "$EXPLICIT_LIB" "$DEST"
-  echo "Staged $EXPLICIT_LIB → native/dist/el8/libstdspalinux.so"
+  echo "Staged $EXPLICIT_LIB → native/dist/el10/libstdspalinux.so"
   exit 0
 fi
 
@@ -45,7 +45,7 @@ for candidate in "${CANDIDATES[@]}"; do
   if [[ -f "$candidate" ]]; then
     echo "Found: $candidate"
     cp "$candidate" "$DEST"
-    echo "Staged → native/dist/el8/libstdspalinux.so"
+    echo "Staged → native/dist/el10/libstdspalinux.so"
     exit 0
   fi
 done
@@ -56,6 +56,6 @@ echo "Options:"
 echo "  1. Provide the path explicitly:"
 echo "       ./scripts/stage-rhel-lib.sh --lib /path/to/libstdspalinux.so"
 echo ""
-echo "  2. Build from source (requires CMake and EL8 build environment):"
-echo "       ./native/scripts/build-runtime.sh --el-major 8"
+echo "  2. Build from source (requires CMake and EL10 build environment):"
+echo "       ./native/scripts/build-runtime.sh --el-major 10"
 exit 1

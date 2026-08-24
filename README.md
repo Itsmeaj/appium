@@ -56,7 +56,7 @@ is open, what is native, and the roadmap toward a fully self-contained build.
 
 ### Standard Appium install (recommended)
 
-If you already have [Appium 2](https://appium.io) installed:
+If you already have [Appium 2 or 3](https://appium.io) installed:
 
 ```bash
 appium driver install --source=npm @stdspa/appium-linux-driver
@@ -94,16 +94,60 @@ this driver + the native runtime under `/opt/uimate/`:
 curl -fsSL https://raw.githubusercontent.com/Itsmeaj/appium/main/install.sh | sudo bash
 ```
 
+Release packages target **Ubuntu 20.04+ amd64** and **RHEL 10 x86_64**.
+Installs Node.js 20.19.0, Appium 2.19.0, and the Linux driver — no manual setup required.
+
+After install, verify: `uimate-appium-doctor`.
+Start Appium: `APPIUM_HOME=/opt/uimate/appium-home appium --port 4723`
+
+## Releases
+
+Pre-built packages are published automatically to [GitHub Releases](https://github.com/Itsmeaj/appium/releases) on every version tag.
+
+Each release contains two packages:
+
 | Package | Target |
 |---------|--------|
-| `uimate-appium-linux_<version>_all.deb` | Ubuntu 20.04+ / Debian |
-| `uimate-appium-linux-<version>-1.el10.x86_64.rpm` | RHEL 8 / 9 / 10, Rocky, Alma |
+| `uimate-appium-linux_<version>_amd64.deb` | Ubuntu 20.04+ / Debian on x86-64 |
+| `uimate-appium-linux-<version>-1.el10.x86_64.rpm` | RHEL 10 on x86-64 |
 
-After install: `uimate-appium-doctor`, then
-`APPIUM_HOME=/opt/uimate/appium-home appium --port 4723`.
+The RPM bundles the checked-in EL10 x86-64 runtime. Compatibility with earlier
+RHEL releases is not claimed by the v0.1.0 release artifact.
+For X11, the configured EL10 repositories must provide `xdotool`, `xclip`, and
+`xsel`; the RPM declares all three as runtime dependencies.
 
 See [docs/UNIFIED_INSTALLER.md](docs/UNIFIED_INSTALLER.md) for building these
 packages from source.
+
+Releases are fully automated via [`.github/workflows/release.yml`](.github/workflows/release.yml).
+
+**Trigger:** push a `v*` tag to `main`.
+
+**What the workflow does:**
+
+1. Checks out the repo on an `ubuntu-22.04` runner
+2. Installs Node.js 20.19.0 and build tools (`binutils`, `dpkg-dev`, `fakeroot`, `rpm`)
+3. Installs dependencies from the committed Yarn lockfile
+4. Builds the `.deb` package — bundles Node.js, Appium 2.19.0, and the driver offline
+5. Builds the EL10 x86-64 `.rpm` package using `native/dist/el10/libstdspalinux.so`
+6. Creates a GitHub Release with auto-generated notes and uploads both packages
+
+### Manual package installation
+
+```bash
+npm install -g appium
+appium driver install --source=npm @stdspa/appium-linux-driver
+```
+
+Or install a specific release package directly:
+
+```bash
+# Ubuntu
+sudo apt-get install -y ./uimate-appium-linux_<version>_amd64.deb
+
+# RHEL 10 x86-64
+sudo dnf install -y ./uimate-appium-linux-<version>-1.el10.x86_64.rpm
+```
 
 ---
 
@@ -154,6 +198,8 @@ Backend behavior is API-compatible across all supported OSes.
 | `platformName` | yes | Must be `Linux`. |
 | `appium:automationName` | yes | Must be `atspi2` (case-insensitive). |
 | `appium:appName` | yes | App binary or path (for example `yelp` or `/bin/yelp`). |
+| `appium:appArguments` | no | Argument array passed directly to the application without a shell. |
+| `appium:attachToRunningApp` | no | Attach to an existing application instead of killing or launching it. Default `false`. |
 | `appium:linuxBackend` | no | `auto` (default), `x11`, `wayland`. |
 | `appium:waylandRestoreToken` | no | Previously issued portal restore token. |
 | `appium:waylandTokenStorePath` | no | Token store path. Default: `~/.config/appium-linux-driver/portal-restore-tokens.json`. |
@@ -161,6 +207,41 @@ Backend behavior is API-compatible across all supported OSes.
 
 `linuxBackend=auto` chooses Wayland when `XDG_SESSION_TYPE=wayland` or
 `WAYLAND_DISPLAY` is present; otherwise X11.
+
+### Launch With Arguments
+
+Pass each command-line token as a separate array entry. The driver launches the
+configured application directly and does not create a shell wrapper:
+
+```json
+{
+  "platformName": "Linux",
+  "appium:automationName": "atspi2",
+  "appium:appName": "/usr/bin/horizon-client-next",
+  "appium:appArguments": [
+    "--serverURL=localhost:4443",
+    "--desktopName=desktop1",
+    "--protocol=BLAST",
+    "--nonInteractive"
+  ],
+  "appium:linuxBackend": "x11"
+}
+```
+
+### Attach To A Running Application
+
+Set `appium:attachToRunningApp` when another process owns application launch.
+Ending the Appium session does not terminate an attached application:
+
+```json
+{
+  "platformName": "Linux",
+  "appium:automationName": "atspi2",
+  "appium:appName": "/usr/bin/horizon-client-next",
+  "appium:attachToRunningApp": true,
+  "appium:linuxBackend": "x11"
+}
+```
 
 ---
 
@@ -188,11 +269,18 @@ Notes:
 | `linux: copy` | `{str}` | Copies string to the system clipboard. |
 | `linux: getClipboard` | none | Returns clipboard content. |
 | `linux: click` | `[elementId]` | Clicks the given element. |
-| `linux: shell` | `{cmd}` | Executes a shell command and returns stdout. |
+| `linux: shell` | `{cmd}` | Executes a shell command and returns stdout. Disabled unless the server enables `atspi2:shell`. |
 
 ```python
 find_btn = driver.find_element("name", "Find")
 driver.execute_script("linux: click", [find_btn.id])
+```
+
+The shell extension is intentionally disabled by default because it runs commands
+on the Appium host. A server administrator can opt in with:
+
+```bash
+appium --allow-insecure=atspi2:shell
 ```
 
 ## Screenshots

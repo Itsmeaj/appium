@@ -5,19 +5,31 @@ All notable changes to this project are documented here. This project adheres to
 
 ## [Unreleased]
 
-### Changed
-- Documentation reworked for community/open-source readiness: honest dependency
-  framing (native AT-SPI runtime as a documented prerequisite, à la XCTest),
-  accurate cross-distro support matrix, and standard `appium driver install` as
-  the primary install path.
-- Widened the `appium` peer dependency range to signal compatibility with
-  current and future Appium 2.x+ servers.
+## [0.1.0]
 
 ### Added
-- `docs/ARCHITECTURE.md` — transparent open-vs-native breakdown and the roadmap
-  toward a fully self-contained build without regressing performance.
-- `CONTRIBUTING.md` — contribution guidelines, with emphasis on distro/toolkit
-  coverage reports and protecting the accessibility-tree hot path.
+- Appium Doctor checks for Linux, the desktop session, the native AT-SPI
+  runtime, and Wayland portal prerequisites.
+- CI compatibility checks that install the driver through Appium 2.19 and 3.4.
+- Safe direct application launch arguments and attach-to-running-app support.
+- `docs/ARCHITECTURE.md` documents the open and native components and the
+  roadmap toward a fully self-contained build.
+- `CONTRIBUTING.md` describes contribution guidelines, with emphasis on
+  distro/toolkit coverage and the accessibility-tree hot path.
+
+### Changed
+- Switched to Appium's public `appium/driver` and `appium/support` exports.
+- Corrected the extension automation name to `AtSpi2` and declared supported
+  Node.js and Appium version ranges.
+- Restricted portal restore-token files to owner-only permissions.
+- Reworked the documentation for community use, including native runtime
+  prerequisites, the cross-distro support matrix, and the standard
+  `appium driver install` path.
+- Declared compatibility with Appium 2 and Appium 3.
+
+### Security
+- `linux: shell` now requires the Appium server feature flag
+  `atspi2:shell` (or relaxed security).
 
 ## [0.0.55]
 

@@ -38,7 +38,7 @@ def main():
     )
     parser.add_argument(
         "--automation-name",
-        default="AtApi2",
+        default="AtSpi2",
         help="Automation name (default: %(default)s)",
     )
     parser.add_argument(

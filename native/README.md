@@ -6,8 +6,6 @@ This subtree owns runtime artifacts used by RHEL unified RPM packaging.
 
 - `native/libstdspalinux/`:
   Runtime source import location (not committed yet in this repo copy).
-- `native/dist/el8/libstdspalinux.so`
-- `native/dist/el9/libstdspalinux.so`
 - `native/dist/el10/libstdspalinux.so`
 - `native/scripts/build-runtime.sh`:
   Build/stage helper for EL-targeted runtime artifacts.
@@ -19,14 +17,14 @@ This subtree owns runtime artifacts used by RHEL unified RPM packaging.
 Run this inside a matching EL environment (VM/container) for ABI correctness.
 
 ```bash
-native/scripts/build-runtime.sh --el-major 9
+native/scripts/build-runtime.sh --el-major 10
 ```
 
 If you already have a prebuilt runtime library:
 
 ```bash
 native/scripts/build-runtime.sh \
-  --el-major 9 \
+  --el-major 10 \
   --prebuilt-lib /tmp/libstdspalinux.so
 ```
 
@@ -34,7 +32,7 @@ native/scripts/build-runtime.sh \
 
 ```bash
 native/scripts/verify-no-legacy-cli-deps.sh \
-  --lib native/dist/el9/libstdspalinux.so
+  --lib native/dist/el10/libstdspalinux.so
 ```
 
 This check is required for supported RHEL packaging path.
@@ -44,5 +42,5 @@ This check is required for supported RHEL packaging path.
 After runtime artifact exists:
 
 ```bash
-./packaging/rpm/build-unified-installer.sh --el-major 9
+./packaging/rpm/build-unified-installer.sh --el-major 10
 ```

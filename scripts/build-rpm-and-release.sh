@@ -2,7 +2,7 @@
 # Run on RHEL machine: 10.4.134.220
 # Prerequisites:
 #   - gh CLI installed and authenticated (gh auth login)
-#   - libstdspalinux.so staged in native/dist/el8/ (run scripts/stage-rhel-lib.sh first)
+#   - EL10 x86-64 libstdspalinux.so staged in native/dist/el10/
 #   - npm install already run
 #
 # Usage:
@@ -17,7 +17,7 @@ TAG=""
 
 usage() {
   cat <<'USAGE'
-Build a universal RPM (RHEL 8/9/10) and upload it to the GitHub Release.
+Build the EL10 x86_64 RPM and upload it to the GitHub Release.
 
 Usage:
   scripts/build-rpm-and-release.sh --version VERSION [--tag TAG]
@@ -56,6 +56,10 @@ fi
 
 # Detect EL major from running OS
 EL_MAJOR="${EL_MAJOR:-$(grep -oP 'VERSION_ID="\K[0-9]+' /etc/os-release | cut -d. -f1)}"
+if [[ "${EL_MAJOR}" != "10" || "$(uname -m)" != "x86_64" ]]; then
+  echo "Error: this release helper requires an EL10 x86_64 build host." >&2
+  exit 1
+fi
 
 # Verify .so is staged
 SO_PATH="${REPO_ROOT}/native/dist/el${EL_MAJOR}/libstdspalinux.so"
