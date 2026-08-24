@@ -224,11 +224,32 @@ NODEEOF
     fi
 
     NPM_CONFIG_CACHE="${WORK_DIR}/npm-cache" npm rebuild sharp --foreground-scripts
-    SHARP_PACKAGE_JSON="${DRIVER_STAGE_DIR}/node_modules/sharp/package.json" node <<'NODEEOF'
+    DRIVER_PACKAGE_JSON="${DRIVER_STAGE_DIR}/package.json" \
+      SHARP_PACKAGE_JSON="${DRIVER_STAGE_DIR}/node_modules/sharp/package.json" \
+      DRIVER_STAGE_DIR="${DRIVER_STAGE_DIR}" node <<'NODEEOF'
 const fs = require('fs');
-const packagePath = process.env.SHARP_PACKAGE_JSON;
+const path = require('path');
+const packagePath = process.env.DRIVER_PACKAGE_JSON;
 const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-pkg.files = [...new Set([...(pkg.files || []), 'build/Release/*.node', 'vendor/**'])];
+const sharpPkg = JSON.parse(fs.readFileSync(process.env.SHARP_PACKAGE_JSON, 'utf8'));
+const linuxSharpPackages = [
+  '@img/sharp-linux-x64',
+  '@img/sharp-libvips-linux-x64',
+];
+
+pkg.optionalDependencies = pkg.optionalDependencies || {};
+for (const name of linuxSharpPackages) {
+  const version = sharpPkg.optionalDependencies && sharpPkg.optionalDependencies[name];
+  const installedPackage = path.join(process.env.DRIVER_STAGE_DIR, 'node_modules', name, 'package.json');
+  if (!version || !fs.existsSync(installedPackage)) {
+    throw new Error(`Required Sharp Linux package is unavailable: ${name}`);
+  }
+  pkg.optionalDependencies[name] = version;
+}
+
+const bundled = [...Object.keys(pkg.dependencies || {}), ...linuxSharpPackages];
+pkg.bundleDependencies = [...new Set(bundled)];
+pkg.bundledDependencies = pkg.bundleDependencies;
 fs.writeFileSync(packagePath, `${JSON.stringify(pkg, null, 2)}\n`);
 NODEEOF
 
@@ -273,13 +294,15 @@ NODEEOF
     "package/node_modules/@stdspa/stdspalinux_temp/package.json" \
     "package/node_modules/@stdspa/stdspalinux_temp/build/Release/NativeExtension.node" \
     "package/node_modules/sharp/package.json" \
-    "package/node_modules/sharp/build/Release/sharp-linux-x64.node"; do
+    "package/node_modules/@img/sharp-linux-x64/package.json" \
+    "package/node_modules/@img/sharp-linux-x64/lib/sharp-linux-x64.node" \
+    "package/node_modules/@img/sharp-libvips-linux-x64/package.json"; do
     if ! grep -Fxq "${required_path}" <<<"${bundle_listing}"; then
       echo "Error: bundled driver artifact is missing required runtime path: ${required_path}" >&2
       exit 1
     fi
   done
-  if ! grep -Eq '^package/node_modules/sharp/vendor/.+/linux-x64/lib/libvips-cpp\.so\.42$' <<<"${bundle_listing}"; then
+  if ! grep -Eq '^package/node_modules/@img/sharp-libvips-linux-x64/lib/libvips-cpp\.so\.[0-9.]+$' <<<"${bundle_listing}"; then
     echo "Error: bundled driver artifact is missing the sharp libvips runtime." >&2
     exit 1
   fi
