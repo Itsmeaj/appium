@@ -70,6 +70,7 @@ describe('Wayland token store', function () {
 
     data.token.should.eql('restore-token-1');
     should.exist(data.updatedAt);
+    (fs.statSync(tmpPath).mode & 0o777).should.eql(0o600);
 
     if (fs.existsSync(tmpPath)) {
       fs.unlinkSync(tmpPath);

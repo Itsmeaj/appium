@@ -77,7 +77,7 @@ Recommended:
 ```json
 {
   "platformName": "Linux",
-  "appium:automationName": "AtApi2",
+  "appium:automationName": "AtSpi2",
   "appium:appName": "gnome-clocks",
   "appium:linuxBackend": "wayland",
   "appium:waylandAutoShare": true

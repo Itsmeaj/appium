@@ -29,17 +29,17 @@ git lfs pull --include='installers/*'
 ./packaging/deb/build-unified-installer.sh \
   --runtime-deb installers/stdspalinux-ubuntu_20_04.deb \
   --appium-spec appium@2.19.0 \
-  --version 0.0.56
+  --version 0.1.0
 ```
 
 Output:
 
-- `dist/installers/uimate-appium-linux_0.0.56_amd64.deb`
+- `dist/installers/uimate-appium-linux_0.1.0_amd64.deb`
 
 ### Install
 
 ```bash
-sudo apt-get install -y ./dist/installers/uimate-appium-linux_0.0.56_amd64.deb
+sudo apt-get install -y ./dist/installers/uimate-appium-linux_0.1.0_amd64.deb
 ```
 
 ## RHEL `.rpm` Flow
@@ -50,7 +50,7 @@ sudo apt-get install -y ./dist/installers/uimate-appium-linux_0.0.56_amd64.deb
 - x86_64
 - GNOME sessions
 
-The v0.0.56 release does not claim compatibility with earlier RHEL releases.
+The v0.1.0 release does not claim compatibility with earlier RHEL releases.
 The EL10 X11 runtime invokes `xdotool`, `xclip`, and `xsel`; these are declared
 RPM dependencies and must be available from the target machine's configured
 repositories.
@@ -79,18 +79,18 @@ Validate runtime guardrail (no `xdotool`/`xclip`/`xsel` dependency):
 ./packaging/rpm/build-unified-installer.sh \
   --el-major 10 \
   --appium-spec appium@2.19.0 \
-  --version 0.0.56
+  --version 0.1.0
 ```
 
 Outputs:
 
-- `dist/installers/uimate-appium-linux-0.0.56-1.el10.x86_64.rpm`
-- `dist/installers/uimate-appium-linux-0.0.56-1.el10.x86_64.rpm.sha256`
+- `dist/installers/uimate-appium-linux-0.1.0-1.el10.x86_64.rpm`
+- `dist/installers/uimate-appium-linux-0.1.0-1.el10.x86_64.rpm.sha256`
 
 ### Install RPM
 
 ```bash
-sudo dnf install -y ./dist/installers/uimate-appium-linux-0.0.56-1.el10.x86_64.rpm
+sudo dnf install -y ./dist/installers/uimate-appium-linux-0.1.0-1.el10.x86_64.rpm
 ```
 
 ## Verify Installation (Both Flows)

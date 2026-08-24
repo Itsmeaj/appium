@@ -1,7 +1,7 @@
 {
   "name": "@stdspa/appium-linux-driver",
-  "version": "0.0.56",
-  "description": "AT-SPI2 based Appium driver for linux desktop apps automation",
+  "version": "0.1.0",
+  "description": "AT-SPI2-based Appium driver for Linux desktop application automation",
   "keywords": [
     "appium",
     "linux",
@@ -12,16 +12,32 @@
     "type": "git",
     "url": "https://github.com/Itsmeaj/appium.git"
   },
-  "engines": [
-    "node"
+  "engines": {
+    "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
+  },
+  "files": [
+    "build/index.js",
+    "build/lib",
+    "doctor",
+    "docs",
+    "index.js",
+    "lib"
   ],
   "appium": {
     "driverName": "atspi2",
-    "automationName": "AtApi2",
+    "automationName": "AtSpi2",
     "platformNames": [
       "Linux"
     ],
-    "mainClass": "AtSpi2Driver"
+    "mainClass": "AtSpi2Driver",
+    "doctor": {
+      "checks": [
+        "./doctor/linux-platform.js",
+        "./doctor/native-runtime.js",
+        "./doctor/desktop-session.js",
+        "./doctor/wayland-prerequisites.js"
+      ]
+    }
   },
   "author": "Ajay <send2ajay03@gmail.com>",
   "license": "Apache-2.0",
@@ -30,27 +46,25 @@
   },
   "homepage": "https://github.com/Itsmeaj/appium#readme",
   "bin": {},
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
-    "@appium/base-driver": "^8.0.0",
-    "@appium/support": "^2.46.0",
     "@babel/runtime": "^7.0.0",
     "@stdspa/stdspalinux_temp": "^0.0.10",
     "asyncbox": "^2.0.2",
-    "axios": "^0.x",
-    "bluebird": "^3.5.1",
+    "bluebird": "^3.7.2",
     "dbus-next": "^0.10.2",
     "lodash": "^4.17.4",
     "lru-cache": "^7.7.1",
-    "portscanner": "2.2.0",
-    "sharp": "^0.30.3",
+    "sharp": "^0.34.3",
     "source-map-support": "^0.x",
-    "teen_process": "^1.15.0",
     "uuid": "^8.3.2",
-    "xmldom": "^0.6.0",
+    "@xmldom/xmldom": "^0.8.10",
     "xpath.js": "^1.1.0"
   },
   "peerDependencies": {
-    "appium": "^2.0.0"
+    "appium": ">=2.0.0 <4.0.0"
   },
   "scripts": {
     "build": "gulp transpile",
@@ -62,7 +76,8 @@
     "precommit-msg": "echo 'Pre-commit checks...' && exit 0",
     "precommit-test": "REPORTER=dot gulp once",
     "lint": "gulp eslint",
-    "lint:fix": "gulp eslint --fix"
+    "lint:fix": "gulp eslint --fix",
+    "test:package": "npm pack --dry-run"
   },
   "pre-commit": [
     "precommit-msg",
@@ -73,7 +88,7 @@
     "@appium/gulp-plugins": "^6.0.0",
     "@babel/core": "^7.16.0",
     "@babel/eslint-parser": "^7.16.3",
-    "@semantic-release/git": "^10.0.1",
+    "appium": "^3.4.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "eslint": "^7.32.0",
@@ -83,7 +98,6 @@
     "gulp": "^4.0.0",
     "mocha": "^9.0.0",
     "pre-commit": "^1.1.3",
-    "semantic-release": "^19.0.2",
     "sinon": "^13.0.0",
     "webdriverio": "^7.0.0"
   },

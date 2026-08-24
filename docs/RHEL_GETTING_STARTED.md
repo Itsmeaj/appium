@@ -8,7 +8,7 @@ Target platform:
 - x86_64
 - GNOME desktop sessions
 
-The v0.0.56 release package is validated only as an EL10 x86-64 artifact.
+The v0.1.0 release package is validated only as an EL10 x86-64 artifact.
 
 Backend rollout order:
 
@@ -41,13 +41,13 @@ Validate guardrail:
 ```bash
 ./packaging/rpm/build-unified-installer.sh \
   --el-major 10 \
-  --version 0.0.56
+  --version 0.1.0
 ```
 
 ## 3. Install RPM
 
 ```bash
-sudo dnf install -y ./dist/installers/uimate-appium-linux-0.0.56-1.el10.x86_64.rpm
+sudo dnf install -y ./dist/installers/uimate-appium-linux-0.1.0-1.el10.x86_64.rpm
 ```
 
 ## 4. Start Appium
@@ -61,7 +61,7 @@ APPIUM_HOME=/opt/uimate/appium-home appium --base-path /wd/hub
 ```json
 {
   "platformName": "Linux",
-  "appium:automationName": "AtApi2",
+  "appium:automationName": "AtSpi2",
   "appium:appName": "gnome-clocks",
   "appium:linuxBackend": "wayland",
   "appium:waylandAutoShare": true

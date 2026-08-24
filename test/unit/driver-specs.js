@@ -1,7 +1,7 @@
 import AtSpi2Driver, {
   normalizeAppArguments,
 } from '../../lib/driver.js';
-import { BaseDriver } from '@appium/base-driver';
+import { BaseDriver } from 'appium/driver';
 import { desiredCapConstraints } from '../../lib/desired-caps.js';
 import * as backends from '../../lib/backends/index.js';
 import chai from 'chai';
