@@ -6,7 +6,7 @@ on:
       package_spec:
         description: Published npm package and version to verify
         required: true
-        default: '@itsmeaj/appium-linux-driver@0.1.0'
+        default: '@itsmeaj/appium-linux-driver@0.1.1'
 
 permissions:
   contents: read
