@@ -49,7 +49,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@babel/runtime": "^7.0.0",
+    "@babel/runtime": "^8.0.5",
     "@stdspa/stdspalinux_temp": "^0.0.10",
     "asyncbox": "^2.0.2",
     "bluebird": "^3.7.2",
